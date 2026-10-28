@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ConceptRadar — Smart Classroom Learning Analytics</title>
+  <meta name="description" content="Help teachers identify student struggle topics through automated quiz score analysis, error analytics, and targeted revision recommendations.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    
+    <!-- Top Global Banner for Demo Status -->
+    <header class="top-banner" id="demoBanner">
+      <div class="banner-content">
+        <span class="badge badge-demo" id="bannerBadge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Demo Mode Active
+        </span>
+        <span class="banner-text">Displaying sample quiz data for demonstration purposes. Not real student records.</span>
+      </div>
+      <div class="banner-actions">
+        <button id="btnSwitchToDemo" class="btn-banner-link" title="Load curated demo sample dataset">Reload Demo</button>
+        <span class="divider">|</span>
+        <button id="btnSwitchToClean" class="btn-banner-link" title="Clear and enter fresh classroom data">Clear to Blank State</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <div class="brand-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                <path d="M2 12h20"></path>
+              </svg>
+            </div>
+            <div class="brand-info">
+              <span class="brand-title">ConceptRadar</span>
+              <span class="brand-subtitle">Smart Analytics</span>
+            </div>
+          </div>
+          <button id="sidebarToggle" class="btn-icon mobile-only" aria-label="Toggle navigation">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="class-selector-card">
+          <span class="label-xs">ACTIVE COHORT</span>
+          <div class="class-name">CS 101: Intro to Programming</div>
+          <div class="class-meta" id="sidebarCohortMeta">Quiz #1 • 6 Students • 3 Topics</div>
+        </div>
+
+        <nav class="nav-menu" role="navigation" aria-label="Main Navigation">
+          <button class="nav-item active" data-page="dashboard" id="navDashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+            <span>Dashboard</span>
+          </button>
+
+          <button class="nav-item" data-page="score-entry" id="navScoreEntry">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span>Student Score Entry</span>
+            <span class="nav-badge" id="navStudentCountBadge">6</span>
+          </button>
+
+          <button class="nav-item" data-page="concept-analysis" id="navConceptAnalysis">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+            <span>Concept Analysis</span>
+          </button>
+
+          <button class="nav-item" data-page="student-records" id="navStudentRecords">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Student Records</span>
+          </button>
+
+          <button class="nav-item" data-page="reports" id="navReports">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>Reports &amp; Export</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="hackathon-tag">
+            <div class="dot-indicator"></div>
+            <span>College Hackathon Build</span>
+          </div>
+          <div class="footer-meta">ConceptRadar • v1.0.0</div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="content-area" id="mainContent">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+          <div class="header-left">
+            <button id="mobileNavTrigger" class="btn-icon mobile-only" aria-label="Open navigation menu">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div>
+              <h1 class="header-title" id="pageTitle">Classroom Learning Dashboard</h1>
+              <p class="header-desc" id="pageSubtitle">Real-time diagnosis of student strengths and algorithmic weak spots</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button id="btnHeaderAddStudent" class="btn btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Add Student</span>
+            </button>
+            <button id="btnHeaderExportCsv" class="btn btn-secondary" title="Export current dataset as CSV">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>CSV</span>
+            </button>
+            <button id="btnHeaderAnalyze" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span>Analyze Scores</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- PAGE 1: DASHBOARD -->
+        <section id="pageDashboard" class="page-view active">
+          
+          <!-- Stat Cards Row -->
+          <div class="grid-stats">
+            <!-- Total Students -->
+            <div class="stat-card">
+              <div class="stat-icon-wrapper bg-blue-light">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Total Students</span>
+                <div class="stat-val-row">
+                  <span class="stat-value" id="statTotalStudents">6</span>
+                  <span class="stat-badge badge-neutral">Max 10</span>
+                </div>
+                <span class="stat-foot">Cohorts size 1–10 supported</span>
+              </div>
+            </div>
+
+            <!-- Class Average -->
+            <div class="stat-card">
+              <div class="stat-icon-wrapper bg-teal-light">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Class Average Score</span>
+                <div class="stat-val-row">
+                  <span class="stat-value" id="statClassAvgScore">6.6</span>
+                  <span class="stat-sub">/ 10.0</span>
+                </div>
+                <span class="stat-foot" id="statClassAvgTotal">Overall 19.8 / 30.0 (66.0%)</span>
+              </div>
+            </div>
+
+            <!-- Topics Analyzed -->
+            <div class="stat-card">
+              <div class="stat-icon-wrapper bg-purple-light">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Topics Analyzed</span>
+                <div class="stat-val-row">
+                  <span class="stat-value">3</span>
+                  <span class="stat-badge badge-success">Full Coverage</span>
+                </div>
+                <span class="stat-foot">Arrays, Loops, Functions</span>
+              </div>
+            </div>
+
+            <!-- Weakest Topic Spotlight -->
+            <div class="stat-card stat-card-weakest" id="cardWeakestTopic">
+              <div class="stat-icon-wrapper bg-rose-light">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Weakest Topic Identified</span>
+                <div class="stat-val-row">
+                  <span class="stat-value text-rose" id="statWeakestTopicName">Loops</span>
+                </div>
+                <div class="stat-error-tag">
+                  <span class="badge badge-danger" id="statWeakestErrorRate">51.7% Error Rate</span>
+                  <span class="stat-foot-inline">Requires immediate revision</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Highlight Banner for Priority Revision -->
+          <div class="alert-box alert-warning" id="dashboardWeakestAlert">
+            <div class="alert-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="alert-content">
+              <div class="alert-title">Curriculum Alert: <strong id="alertWeakestTopicBold">Loops</strong> has the highest error percentage across the classroom.</div>
+              <div class="alert-desc" id="alertWeakestTopicDesc">Students averaged 4.8 / 10 in Loops with 31 mistakes out of 60 possible marks (51.7% error rate). Re-teaching nested loop condition evaluation is highly recommended before the mid-term quiz.</div>
+            </div>
+            <button class="btn btn-sm btn-outline-warning" id="btnGoToConceptDeepDive">View Teaching Recommendations</button>
+          </div>
+
+          <!-- Topic Performance Cards Row -->
+          <div class="section-title-row">
+            <div>
+              <h2 class="section-title">Topic Performance Overview</h2>
+              <p class="section-subtitle">Real-time score breakdown computed across all student submissions</p>
+            </div>
+            <span class="badge badge-neutral" id="dashSampleBadge">Demo Dataset</span>
+          </div>
+
+          <div class="grid-topic-cards" id="dashTopicCardsContainer">
+            <!-- Dynamic topic cards will be rendered here by JS -->
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid-charts-2col">
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Average Score Comparison</h3>
+                  <p class="card-subtitle">Topic average score out of 10 maximum possible points</p>
+                </div>
+                <span class="badge badge-primary">Score / 10</span>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="chartAverageScores" aria-label="Average Score Bar Chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Topic Error Percentage</h3>
+                  <p class="card-subtitle">Calculated as (Mistakes ÷ Possible Marks) × 100</p>
+                </div>
+                <span class="badge badge-danger">Error %</span>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="chartErrorRates" aria-label="Topic Error Rates Bar Chart" role="img"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revision Priority List Card -->
+          <div class="card mt-6">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Actionable Revision Priority List</h3>
+                <p class="card-subtitle">Algorithmically ordered from highest struggle to fully mastered topics</p>
+              </div>
+              <button class="btn btn-sm btn-outline" id="btnQuickScoreEntry">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                <span>Edit Scores</span>
+              </button>
+            </div>
+            <div class="priority-list" id="dashRevisionList">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- PAGE 2: STUDENT SCORE ENTRY -->
+        <section id="pageScoreEntry" class="page-view">
+          <div class="card">
+            <div class="card-header flex-wrap-mobile">
+              <div>
+                <h2 class="card-title">Student Score Management</h2>
+                <p class="card-subtitle">Enter student names and individual scores (0 to 10 questions correct per topic). Cohort size: 1–10 students.</p>
+              </div>
+              <div class="card-actions-group">
+                <button id="btnLoadDemoInEntry" class="btn btn-sm btn-secondary" title="Load sample dataset">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <span>Load Demo (6)</span>
+                </button>
+                <button id="btnClearAllRows" class="btn btn-sm btn-outline-danger" title="Clear table to blank">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <span>Clear All</span>
+                </button>
+                <button id="btnAddRow" class="btn btn-sm btn-primary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span>Add Student Row</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Validation Feedback Banner -->
+            <div id="entryValidationAlert" class="alert-box alert-danger hidden">
+              <div class="alert-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              </div>
+              <div class="alert-content">
+                <div class="alert-title">Validation Warning</div>
+                <div class="alert-desc" id="entryValidationText">Please correct errors before analyzing.</div>
+              </div>
+            </div>
+
+            <!-- Score Entry Table Form -->
+            <div class="table-responsive">
+              <table class="data-table entry-table" id="scoreEntryTable">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">#</th>
+                    <th style="min-width: 180px;">Student Full Name</th>
+                    <th style="min-width: 130px;">
+                      Arrays Score
+                      <span class="sub-header">(0 – 10)</span>
+                    </th>
+                    <th style="min-width: 130px;">
+                      Loops Score
+                      <span class="sub-header">(0 – 10)</span>
+                    </th>
+                    <th style="min-width: 130px;">
+                      Functions Score
+                      <span class="sub-header">(0 – 10)</span>
+                    </th>
+                    <th style="min-width: 110px;">Total</th>
+                    <th style="width: 80px; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="scoreEntryTableBody">
+                  <!-- Dynamic rows generated by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table footer actions and student limit counter -->
+            <div class="entry-footer">
+              <div class="entry-count-indicator">
+                <span class="dot-live"></span>
+                <span>Students: <strong id="entryStudentCounter">6</strong> / 10 maximum</span>
+                <span class="text-muted ml-2">(Minimum 1 student required for analysis)</span>
+              </div>
+              <div class="entry-buttons">
+                <button id="btnSaveAndAnalyze" class="btn btn-primary btn-lg">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                  <span>Analyze Scores Now</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formula & Rules Reference Card -->
+          <div class="card mt-6 bg-slate-50 border-subtle">
+            <h3 class="card-title text-sm uppercase-tracking">Analytics Calculation Engine Reference</h3>
+            <div class="grid-rules mt-3">
+              <div class="rule-item">
+                <span class="rule-badge">1</span>
+                <div>
+                  <strong>Total Score:</strong>
+                  <code>&Sigma; (scores for topic)</code>
+                </div>
+              </div>
+              <div class="rule-item">
+                <span class="rule-badge">2</span>
+                <div>
+                  <strong>Possible Marks:</strong>
+                  <code>Students &times; 10</code>
+                </div>
+              </div>
+              <div class="rule-item">
+                <span class="rule-badge">3</span>
+                <div>
+                  <strong>Average Score:</strong>
+                  <code>Total Score &divide; Students</code>
+                </div>
+              </div>
+              <div class="rule-item">
+                <span class="rule-badge">4</span>
+                <div>
+                  <strong>Mistakes:</strong>
+                  <code>Possible Marks &minus; Total Score</code>
+                </div>
+              </div>
+              <div class="rule-item">
+                <span class="rule-badge">5</span>
+                <div>
+                  <strong>Error Percentage:</strong>
+                  <code>(Mistakes &divide; Possible) &times; 100</code>
+                </div>
+              </div>
+              <div class="rule-item">
+                <span class="rule-badge">6</span>
+                <div>
+                  <strong>Weakest Topic:</strong>
+                  <code>Topic with highest Error %</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAGE 3: CONCEPT ANALYSIS -->
+        <section id="pageConceptAnalysis" class="page-view">
+          
+          <!-- Weakest Topic Hero Highlight Banner -->
+          <div class="weakest-concept-hero" id="conceptHeroBanner">
+            <div class="hero-left">
+              <div class="hero-tag">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Primary Remediation Target
+              </div>
+              <h2 class="hero-title">Weakest Topic: <span id="heroWeakestTitle">Loops</span></h2>
+              <p class="hero-desc" id="heroWeakestDesc">
+                With an error rate of <strong id="heroWeakestErrorRate">51.7%</strong>, Loops represents the steepest cognitive roadblock in the current curriculum.
+              </p>
+              <div class="hero-quick-stats">
+                <div class="hero-stat-pill">
+                  <span class="pill-label">Avg Score:</span>
+                  <span class="pill-val" id="heroWeakestAvg">4.8 / 10</span>
+                </div>
+                <div class="hero-stat-pill">
+                  <span class="pill-label">Total Mistakes:</span>
+                  <span class="pill-val" id="heroWeakestMistakes">31 / 60</span>
+                </div>
+                <div class="hero-stat-pill">
+                  <span class="pill-label">Cohort Size:</span>
+                  <span class="pill-val" id="heroWeakestStudents">6 Students</span>
+                </div>
+              </div>
+            </div>
+            <div class="hero-right">
+              <div class="circular-error-display">
+                <div class="circular-inner">
+                  <span class="circular-val" id="heroCircleErrorVal">51.7%</span>
+                  <span class="circular-label">Error Rate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Concept Ranking Table -->
+          <div class="card mt-6">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Concept Mastery &amp; Error Diagnostic Table</h3>
+                <p class="card-subtitle">Topics ranked strictly from highest error percentage (weakest) to lowest error percentage</p>
+              </div>
+              <span class="badge badge-primary">Ranked by Struggle Level</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Topic Name</th>
+                    <th>Average Score (out of 10)</th>
+                    <th>Total Marks</th>
+                    <th>Possible Marks</th>
+                    <th>Mistakes</th>
+                    <th>Error Percentage</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="conceptAnalysisTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Radar Chart & Teaching Recommendations 2-Col Grid -->
+          <div class="grid-2col mt-6">
+            <!-- Radar Chart -->
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Concept Mastery Radar</h3>
+                  <p class="card-subtitle">Multivariate visualization of curriculum retention</p>
+                </div>
+                <span class="badge badge-neutral">Radar View</span>
+              </div>
+              <div class="chart-wrapper radar-chart-wrapper">
+                <canvas id="chartConceptRadar" aria-label="Concept Radar Chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <!-- Teaching Recommendations -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Actionable Teaching Recommendations</h3>
+                  <p class="card-subtitle">Pedagogical strategies customized for the current score distribution</p>
+                </div>
+                <span class="badge badge-teal">Pedagogy Plan</span>
+              </div>
+              <div class="recommendations-container" id="recommendationsList">
+                <!-- Dynamically populated based on weakest topic -->
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- PAGE 4: STUDENT RECORDS -->
+        <section id="pageStudentRecords" class="page-view">
+          <div class="card">
+            <div class="card-header flex-wrap-mobile">
+              <div>
+                <h2 class="card-title">Student Score Roster</h2>
+                <p class="card-subtitle">Search, filter, and inspect topic scores for each enrolled student</p>
+              </div>
+              <div class="filter-controls">
+                <!-- Search input -->
+                <div class="search-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <input type="text" id="studentSearchInput" placeholder="Search by student name..." aria-label="Search students">
+                  <button id="btnClearSearch" class="btn-clear-search hidden">&times;</button>
+                </div>
+                
+                <!-- Sort dropdown -->
+                <div class="sort-select-wrapper">
+                  <label for="studentSortSelect" class="sr-only">Sort by</label>
+                  <select id="studentSortSelect" class="form-select" aria-label="Sort student records">
+                    <option value="total_desc">Sort: Total Score (High &rarr; Low)</option>
+                    <option value="total_asc">Sort: Total Score (Low &rarr; High)</option>
+                    <option value="name_asc">Sort: Name (A &rarr; Z)</option>
+                    <option value="name_desc">Sort: Name (Z &rarr; A)</option>
+                    <option value="loops_asc">Sort: Loops Score (Lowest First)</option>
+                    <option value="arrays_asc">Sort: Arrays Score (Lowest First)</option>
+                    <option value="functions_asc">Sort: Functions Score (Lowest First)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter tabs -->
+            <div class="filter-tabs">
+              <button class="filter-tab active" data-filter="all">All Students (<span id="countFilterAll">6</span>)</button>
+              <button class="filter-tab" data-filter="needs_support">Needs Support (&lt; 60%) (<span id="countFilterSupport">2</span>)</button>
+              <button class="filter-tab" data-filter="average">Average (60%–79%) (<span id="countFilterAvg">3</span>)</button>
+              <button class="filter-tab" data-filter="top">High Performers (&ge; 80%) (<span id="countFilterTop">1</span>)</button>
+            </div>
+
+            <!-- Student Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Arrays (10)</th>
+                    <th>Loops (10)</th>
+                    <th>Functions (10)</th>
+                    <th>Total Score (30)</th>
+                    <th>Performance Tier</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="studentRecordsTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty search state -->
+            <div id="studentSearchEmpty" class="empty-state hidden">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <h4>No matching students found</h4>
+              <p>Try searching for a different name or clearing filters.</p>
+              <button class="btn btn-secondary btn-sm" id="btnResetSearch">Reset Search</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAGE 5: REPORTS & EXPORT -->
+        <section id="pageReports" class="page-view">
+          <div class="card printable-report-card" id="printableReportArea">
+            
+            <div class="report-header">
+              <div class="report-brand">
+                <div class="brand-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                </div>
+                <div>
+                  <h2 class="report-title">ConceptRadar Classroom Diagnostic Report</h2>
+                  <div class="report-sub">Official Academic Diagnostic Summary • Computer Science CS 101</div>
+                </div>
+              </div>
+              <div class="report-meta-box">
+                <div><strong>Generated:</strong> <span id="reportGenDate">October 28, 2026</span></div>
+                <div><strong>Class Size:</strong> <span id="reportClassSize">6 Students</span></div>
+                <div><strong>Assessment:</strong> Programming Fundamentals Quiz #1</div>
+              </div>
+            </div>
+
+            <div class="report-actions-bar no-print">
+              <div class="report-actions-info">
+                <span class="badge badge-success">Ready for Export</span>
+                <span>Includes topic breakdown, individual student matrices, and remediation recommendations.</span>
+              </div>
+              <div class="btn-group">
+                <button id="btnDownloadCsvReport" class="btn btn-secondary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>Download CSV</span>
+                </button>
+                <button id="btnPrintReport" class="btn btn-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                  <span>Print / Save as PDF</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Report KPI Grid -->
+            <div class="grid-report-kpi mt-6">
+              <div class="report-kpi-item">
+                <span class="label">Cohort Average</span>
+                <span class="value" id="repClassAvg">19.8 / 30</span>
+                <span class="foot">66.0% overall score</span>
+              </div>
+              <div class="report-kpi-item">
+                <span class="label">Weakest Concept</span>
+                <span class="value text-rose" id="repWeakestConcept">Loops</span>
+                <span class="foot" id="repWeakestPct">51.7% Error Rate</span>
+              </div>
+              <div class="report-kpi-item">
+                <span class="label">Strongest Concept</span>
+                <span class="value text-teal" id="repStrongestConcept">Functions</span>
+                <span class="foot" id="repStrongestPct">25.0% Error Rate</span>
+              </div>
+              <div class="report-kpi-item">
+                <span class="label">Passing Rate (&ge;60%)</span>
+                <span class="value" id="repPassRate">66.7%</span>
+                <span class="foot" id="repPassRateFoot">4 of 6 students passed</span>
+              </div>
+            </div>
+
+            <!-- Topics That Need Revision Section -->
+            <div class="report-section mt-6">
+              <h3 class="report-section-title">
+                <span class="bullet-dot bullet-rose"></span>
+                Curriculum Topics That Need Revision
+              </h3>
+              <p class="report-section-subtitle">Categorized by instructional urgency based on formula-driven mistake ratios</p>
+
+              <div class="revision-table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Priority</th>
+                      <th>Topic</th>
+                      <th>Class Average</th>
+                      <th>Mistakes / Possible</th>
+                      <th>Error Rate</th>
+                      <th>Recommended Action</th>
+                      <th>Suggested Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportRevisionTableBody">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Full Class Roster Summary Table in Report -->
+            <div class="report-section mt-6">
+              <h3 class="report-section-title">
+                <span class="bullet-dot bullet-blue"></span>
+                Individual Student Score Summary
+              </h3>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Student Name</th>
+                      <th>Arrays (10)</th>
+                      <th>Loops (10)</th>
+                      <th>Functions (10)</th>
+                      <th>Total Score (30)</th>
+                      <th>Percentage</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportStudentTableBody">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Teacher Signoff Section for Official Submission -->
+            <div class="report-signoff mt-6">
+              <div class="signoff-box">
+                <div class="signoff-line"></div>
+                <div class="signoff-label">Instructor Signature</div>
+              </div>
+              <div class="signoff-box">
+                <div class="signoff-line"></div>
+                <div class="signoff-label">Department Head Verification</div>
+              </div>
+              <div class="signoff-box">
+                <div class="signoff-date">Official Stamp / Date</div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div id="studentDetailModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalStudentName">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <div class="avatar-large" id="modalStudentAvatar">AR</div>
+            <div>
+              <h3 class="modal-title" id="modalStudentName">Alex Rivera</h3>
+              <p class="modal-subtitle" id="modalStudentTier">Performance: High Achiever</p>
+            </div>
+          </div>
+          <button id="btnCloseModal" class="btn-icon" aria-label="Close modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Total Score Banner -->
+          <div class="modal-score-banner">
+            <div>
+              <span class="label-xs">TOTAL SCORE</span>
+              <div class="score-large"><span id="modalTotalScore">22</span> <span class="score-denom">/ 30</span></div>
+            </div>
+            <div>
+              <span class="label-xs">OVERALL ACCURACY</span>
+              <div class="score-large text-teal"><span id="modalAccuracy">73.3%</span></div>
+            </div>
+            <div>
+              <span class="label-xs">CLASS RANK</span>
+              <div class="score-large"><span id="modalRank">#2</span> <span class="score-denom">of 6</span></div>
+            </div>
+          </div>
+
+          <!-- Topic Score Breakdown Progress Bars -->
+          <h4 class="modal-section-title">Topic Breakdown</h4>
+          <div class="modal-topic-bars" id="modalTopicBars">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Individual Student Recommendations -->
+          <h4 class="modal-section-title mt-4">Personalized Student Study Plan</h4>
+          <div class="personalized-feedback" id="modalPersonalizedFeedback">
+            <!-- Dynamic feedback based on weakest topic for this student -->
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btnModalCloseSecondary">Close</button>
+          <button class="btn btn-primary" id="btnModalEditStudent">Edit Student in Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Toast Notification Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
